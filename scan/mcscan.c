@@ -252,7 +252,16 @@ static void collect(int fd, uint64_t deadline)
 	int last_rtp = 0;
 
 	while (now_ms() <= deadline) {
+		struct pollfd p = { .fd = fd, .events = POLLIN };
 		struct iovec iov = { .iov_base = buf, .iov_len = sizeof(buf) };
+		int left = (int)(deadline - now_ms());
+		int prc;
+
+		if (left < 0)
+			left = 0;
+		prc = poll(&p, 1, left);
+		if (prc <= 0)
+			break;
 		struct sockaddr_in from;
 		struct msghdr msg;
 		uint32_t dest = 0;
