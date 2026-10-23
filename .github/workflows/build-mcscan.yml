@@ -12,15 +12,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install cross compiler
+      # zig ships a complete musl cross toolchain, so no apt-get is involved
+      # (the hosted runner's apt mirror is frequently slow/hanging).
+      - name: Install zig
         run: |
-          sudo apt-get update
-          sudo apt-get install -y gcc-aarch64-linux-gnu
+          python3 -m pip install --quiet ziglang
+          python3 -m ziglang version
 
       - name: Build static aarch64 binary
         run: |
-          aarch64-linux-gnu-gcc -O2 -Wall -Wextra -static -pthread \
-            -o mcscan scan/mcscan.c
+          python3 -m ziglang cc -target aarch64-linux-musl -O2 -Wall -Wextra \
+            -static -o mcscan scan/mcscan.c
           file mcscan
           ls -lh mcscan
 
