@@ -210,10 +210,10 @@ static int open_socket(uint16_t port)
 
 	if (fd < 0)
 		return -1;
+	/* SO_REUSEADDR only: with SO_REUSEPORT the kernel load-balances datagrams
+	 * between our socket and any other listener on the same port (rtp2httpd),
+	 * which makes a scan silently miss streams. */
 	setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
-#ifdef SO_REUSEPORT
-	setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, &one, sizeof(one));
-#endif
 	setsockopt(fd, SOL_SOCKET, SO_RCVBUF, &(int){4 * 1024 * 1024}, sizeof(int));
 	setsockopt(fd, IPPROTO_IP, IP_PKTINFO, &one, sizeof(one));
 #ifdef IP_MULTICAST_ALL
